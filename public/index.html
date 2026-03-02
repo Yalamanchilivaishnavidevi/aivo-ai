@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="icon" type="image/png" href="logo.png">
+<title>AIVO - Free Local AI Powered by Mistral</title>
+      <meta name="description" content="AIVO AI is a free intelligent AI assistant for coding, startups, business, and life guidance. 100% free AI powered by local models.">
+
+<meta name="keywords" content="AIVO AI, Free AI Assistant, Telugu AI, Startup AI, Coding AI">
+
+<meta name="author" content="AIVO AI">
+
+<meta property="og:title" content="AIVO AI - Free Smart AI Assistant">
+<meta property="og:description" content="Free AI assistant built for students, founders and coders.">
+<meta property="og:type" content="website">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  height: 100vh;
+}
+
+#sidebar {
+  width: 260px;
+  background: #111827;
+  padding: 15px;
+  overflow-y: auto;
+  border-right: 1px solid #1f2937;
+}
+
+#sidebar button {
+  width: 100%;
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.chat-item {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-item:hover {
+  background: #1f2937;
+}
+
+.active {
+  background: #1e3a8a;
+}
+
+.delete-btn {
+  color: red;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  max-width: 70%;
+  padding: 10px 14px;
+  margin: 8px 0;
+  border-radius: 18px;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.user {
+  background: #2563eb;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.bot {
+  background: #1e293b;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+#inputArea {
+  display: flex;
+  margin-top: 10px;
+}
+
+#message {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+#sendBtn {
+  margin-left: 8px;
+  padding: 12px 18px;
+  background: #2563eb;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="sidebar">
+  <button onclick="createNewChat()">+ New Chat</button>
+  <div id="chatList"></div>
+</div>
+
+<div id="main">
+  <h2>🤖 AIVO AI 3.0</h2>
+  <div id="chat"></div>
+
+  <div id="inputArea">
+    <input type="text" id="message" placeholder="Type a message...">
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+
+const chatBox = document.getElementById("chat");
+const chatList = document.getElementById("chatList");
+const input = document.getElementById("message");
+
+input.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") sendMessage();
+});
+
+async function loadConversations() {
+  const res = await fetch("/conversations");
+  const data = await res.json();
+
+  chatList.innerHTML = "";
+
+  data.conversations.forEach(chat => {
+    const div = document.createElement("div");
+    div.className = "chat-item";
+    if (chat.id === data.currentChatId) div.classList.add("active");
+
+    const title = document.createElement("span");
+    title.innerText = chat.title;
+
+    const del = document.createElement("span");
+    del.innerText = "✖";
+    del.className = "delete-btn";
+    del.onclick = (e) => {
+      e.stopPropagation();
+      deleteChat(chat.id);
+    };
+
+    div.appendChild(title);
+    div.appendChild(del);
+    div.onclick = () => loadChat(chat.id);
+
+    chatList.appendChild(div);
+  });
+}
+
+async function createNewChat() {
+  const res = await fetch("/new-chat", { method: "POST" });
+  const newChat = await res.json();
+  await loadConversations();
+  await loadChat(newChat.id);
+}
+
+async function loadChat(id) {
+  await fetch("/load-chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  });
+
+  const res = await fetch("/conversations");
+  const data = await res.json();
+
+  const chat = data.conversations.find(c => c.id === id);
+
+  chatBox.innerHTML = "";
+
+  if (chat) {
+    chat.messages.forEach(msg => {
+      const div = document.createElement("div");
+      div.className = msg.role === "user" ? "message user" : "message bot";
+      div.innerText = msg.message;
+      chatBox.appendChild(div);
+    });
+  }
+
+  chatBox.scrollTop = chatBox.scrollHeight;
+  loadConversations();
+}
+
+async function deleteChat(id) {
+  await fetch("/delete-chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id })
+  });
+
+  chatBox.innerHTML = "";
+  await loadConversations();
+
+  const res = await fetch("/conversations");
+  const data = await res.json();
+
+  if (data.currentChatId) {
+    await loadChat(data.currentChatId);
+  }
+}
+
+async function sendMessage() {
+  const message = input.value.trim();
+  if (!message) return;
+
+  const userDiv = document.createElement("div");
+  userDiv.className = "message user";
+  userDiv.innerText = message;
+  chatBox.appendChild(userDiv);
+
+  input.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  const res = await fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message })
+  });
+
+  const data = await res.json();
+
+  const botDiv = document.createElement("div");
+  botDiv.className = "message bot";
+  botDiv.innerText = data.reply;
+  chatBox.appendChild(botDiv);
+
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  loadConversations();
+}
+
+window.onload = async () => {
+  await loadConversations();
+
+  const res = await fetch("/conversations");
+  const data = await res.json();
+
+  if (data.conversations.length === 0) {
+    await createNewChat();
+  } else if (data.currentChatId) {
+    await loadChat(data.currentChatId);
+  }
+};
+
+</script>
+</body>
+</html>
