@@ -115,10 +115,13 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    const reply =
-      data.choices?.[0]?.message?.content ||
-      "No response from model.";
+console.log("GROQ RESPONSE:", JSON.stringify(data, null, 2));
 
+let reply = "No response from model.";
+
+if (data.choices && data.choices.length > 0) {
+  reply = data.choices[0].message.content;
+}
     chat.messages.push({ role: "assistant", message: reply });
 
     saveMemory();
