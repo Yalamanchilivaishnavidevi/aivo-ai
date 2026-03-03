@@ -1,6 +1,10 @@
 import express from "express";
 import fs from "fs";
 import cors from "cors";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -62,7 +66,9 @@ app.post("/delete-chat", (req, res) => {
   saveMemory();
   res.json({ success: true });
 });
-// 🔥 MAIN AI ROUTE (CONNECTED TO OLLAMA)
+
+
+// 🔥 MAIN AI ROUTE (CONNECTED TO GROQ CLOUD)
 
 app.post("/chat", async (req, res) => {
   const { message } = req.body;
@@ -82,29 +88,36 @@ app.post("/chat", async (req, res) => {
   chat.messages.push({ role: "user", message });
 
   try {
-    const response = await fetch("http://127.0.0.1:11434/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "mistral",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are AIVO, an advanced AI assistant that helps with business, coding, studies, and life guidance. Respond clearly and intelligently."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        stream: false
-      })
-    });
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama3-8b-8192",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are AIVO, an advanced AI assistant that helps with business, coding, studies, and life guidance. Respond clearly and intelligently."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ]
+        })
+      }
+    );
 
     const data = await response.json();
 
-    const reply = data.message?.content || "No response from model.";
+    const reply =
+      data.choices?.[0]?.message?.content ||
+      "No response from model.";
 
     chat.messages.push({ role: "assistant", message: reply });
 
@@ -114,10 +127,12 @@ app.post("/chat", async (req, res) => {
 
   } catch (error) {
     console.error("FULL ERROR:", error);
-    res.json({ reply: "Ollama connection failed." });
+    res.json({ reply: "AI connection failed." });
   }
 });
 
-app.listen(3000, () => {
-  console.log("🚀 AIVO AI (Local Free Version) running on http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 AIVO AI running on port ${PORT}`);
 });
