@@ -1,10 +1,6 @@
 import express from "express";
 import fs from "fs";
 import cors from "cors";
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -47,29 +43,6 @@ app.post("/new-chat", (req, res) => {
   res.json(newChat);
 });
 
-app.post("/load-chat", (req, res) => {
-  const { id } = req.body;
-  memory.currentChatId = id;
-  saveMemory();
-  res.json({ success: true });
-});
-
-app.post("/delete-chat", (req, res) => {
-  const { id } = req.body;
-
-  memory.conversations = memory.conversations.filter(c => c.id !== id);
-
-  if (memory.currentChatId === id) {
-    memory.currentChatId = memory.conversations[0]?.id || null;
-  }
-
-  saveMemory();
-  res.json({ success: true });
-});
-
-
-// 🔥 MAIN AI ROUTE (CONNECTED TO GROQ CLOUD)
-
 app.post("/chat", async (req, res) => {
   const { message } = req.body;
 
@@ -102,7 +75,7 @@ app.post("/chat", async (req, res) => {
             {
               role: "system",
               content:
-                "You are AIVO, an advanced AI assistant that helps with business, coding, studies, and life guidance. Respond clearly and intelligently."
+                "You are AIVO, an advanced AI assistant that helps with business, coding, studies, and life guidance."
             },
             {
               role: "user",
@@ -120,13 +93,12 @@ app.post("/chat", async (req, res) => {
       "No response from model.";
 
     chat.messages.push({ role: "assistant", message: reply });
-
     saveMemory();
 
     res.json({ reply });
 
   } catch (error) {
-    console.error("FULL ERROR:", error);
+    console.error("ERROR:", error);
     res.json({ reply: "AI connection failed." });
   }
 });
