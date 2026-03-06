@@ -113,16 +113,16 @@ app.post("/chat", async (req, res) => {
       }
     );
 
-    const data = await response.json();
+const data = await response.json();
 
-console.log("GROQ RESPONSE:", JSON.stringify(data, null, 2));
+console.log("GROQ RESPONSE:", JSON.stringify(data));
 
-let reply = "No response from model.";
+let reply = "AI error.";
 
-if (data.choices && data.choices.length > 0) {
+if (data.choices && data.choices[0] && data.choices[0].message) {
   reply = data.choices[0].message.content;
 }
-    chat.messages.push({ role: "assistant", message: reply });
+      chat.messages.push({ role: "assistant", message: reply });
 
     saveMemory();
 

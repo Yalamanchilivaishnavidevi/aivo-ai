@@ -36,6 +36,14 @@
         {
           "role": "assistant",
           "message": " Hello! I'm here to help you with a variety of tasks, ranging from business and coding to studying and life guidance. Whether you have questions about programming, need assistance with homework, or are looking for advice on personal matters, feel free to ask and I will do my best to assist you.\n\nHow can I help you today?"
+        },
+        {
+          "role": "user",
+          "message": "hi"
+        },
+        {
+          "role": "assistant",
+          "message": "No response from model."
         }
       ]
     },
