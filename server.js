@@ -65,14 +65,26 @@ app.post("/chat", async (req, res) => {
         body: JSON.stringify({
          const currentTime = new Date().toLocaleString();
 
+const currentTime = new Date().toLocaleString("en-IN", {
+  timeZone: "Asia/Kolkata"
+});
+
+let finalMessage = message;
+
+if (message.toLowerCase().includes("time")) {
+  finalMessage = `User asked current time. Current time is ${currentTime}. Tell the exact time clearly.`;
+}
+
 messages: [
   {
     role: "system",
-    content: `You are AIVO AI assistant. Current time is ${currentTime}. Always give correct real-time answers.`
+    content: "You are AIVO AI assistant. Give direct and accurate answers."
   },
-  { role: "user", content: message }
+  {
+    role: "user",
+    content: finalMessage
+  }
 ]
-
         })
       }
     );
