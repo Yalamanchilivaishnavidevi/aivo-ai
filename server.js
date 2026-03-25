@@ -63,11 +63,16 @@ app.post("/chat", async (req, res) => {
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
-          messages: [
-            { role: "system", content: "You are AIVO AI assistant." },
-            { role: "user", content: message }
-          ]
+         const currentTime = new Date().toLocaleString();
+
+messages: [
+  {
+    role: "system",
+    content: `You are AIVO AI assistant. Current time is ${currentTime}. Always give correct real-time answers.`
+  },
+  { role: "user", content: message }
+]
+
         })
       }
     );
