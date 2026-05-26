@@ -65,15 +65,8 @@ app.post("/chat", async (req, res) => {
         body: JSON.stringify({
          const currentTime = new Date().toLocaleString();
 
-const currentTime = new Date().toLocaleString("en-IN", {
-  timeZone: "Asia/Kolkata"
-});
+const currentTime = new Date().toLocaleString();
 
-let finalMessage = message;
-
-if (message.toLowerCase().includes("time")) {
-  finalMessage = `User asked current time. Current time is ${currentTime}. Tell the exact time clearly.`;
-}
 
 messages: [
   {
