@@ -65,7 +65,7 @@ app.post("/chat", async (req, res) => {
         body: JSON.stringify({
          const currentTime = new Date().toLocaleString();
 
-const currentTime = new Date().toLocaleString();
+ ${new Date().toLocaleString()}
 
 body: JSON.stringify({
   model: "llama-3.3-70b-versatile",
