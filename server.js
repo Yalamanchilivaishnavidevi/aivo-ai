@@ -67,20 +67,20 @@ app.post("/chat", async (req, res) => {
 
 const currentTime = new Date().toLocaleString();
 
+body: JSON.stringify({
+  model: "llama-3.3-70b-versatile",
+  messages: [
+    {
+      role: "system",
+      content: `You are AIVO AI assistant. Current date and time is ${new Date().toLocaleString()}`
+    },
+    {
+      role: "user",
+      content: message
+    }
+  ]
+})
 
-messages: [
-  {
-    role: "system",
-    content: "You are AIVO AI assistant. Give direct and accurate answers."
-  },
-  {
-    role: "user",
-    content: finalMessage
-  }
-]
-        })
-      }
-    );
 
     const data = await response.json();
 
