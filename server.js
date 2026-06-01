@@ -1,9 +1,10 @@
-import express from "express";
+\import express from "express";
 import fs from "fs";
 import cors from "cors";
 import fetch from "node-fetch";
 
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
@@ -35,6 +36,7 @@ app.post("/new-chat", (req, res) => {
 
   memory.conversations.unshift(newChat);
   memory.currentChatId = newChat.id;
+
   saveMemory();
 
   res.json(newChat);
@@ -51,7 +53,10 @@ app.post("/chat", async (req, res) => {
     c => c.id === memory.currentChatId
   );
 
-  chat.messages.push({ role: "user", message });
+  chat.messages.push({
+    role: "user",
+    message
+  });
 
   try {
     const response = await fetch(
@@ -63,24 +68,20 @@ app.post("/chat", async (req, res) => {
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`
         },
         body: JSON.stringify({
-         const currentTime = new Date().toLocaleString();
-
- ${new Date().toLocaleString()}
-
-body: JSON.stringify({
-  model: "llama-3.3-70b-versatile",
-  messages: [
-    {
-      role: "system",
-      content: `You are AIVO AI assistant. Current date and time is ${new Date().toLocaleString()}`
-    },
-    {
-      role: "user",
-      content: message
-    }
-  ]
-})
-
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "system",
+              content: `You are AIVO AI assistant. Current date and time is ${new Date().toLocaleString()}`
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ]
+        })
+      }
+    );
 
     const data = await response.json();
 
@@ -94,7 +95,10 @@ body: JSON.stringify({
       reply = data.error.message;
     }
 
-    chat.messages.push({ role: "assistant", message: reply });
+    chat.messages.push({
+      role: "assistant",
+      message: reply
+    });
 
     saveMemory();
 
