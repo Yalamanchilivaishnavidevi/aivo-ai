@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" href="logo.png">
 
 <!-- ✅ SEO Title -->
-f<title>AIVO - Free Local AI Powered by Mistral</title>
+<title>AIVO - Free Local AI Powered by Mistral</title>
 
 <!-- ✅ SEO Description -->
 <meta name="description" content="AIVO AI is a free intelligent AI assistant for coding, startups, business, and life guidance. Try now!">
@@ -157,7 +157,47 @@ body {
 </div>
 
 <script>
-// (unchanged JS)
+async function sendMessage() {
+  const input = document.getElementById("message");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  const chat = document.getElementById("chat");
+
+  chat.innerHTML += `
+    <div class="message user">${message}</div>
+  `;
+
+  input.value = "";
+
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await response.json();
+
+    chat.innerHTML += `
+      <div class="message bot">${data.reply}</div>
+    `;
+
+    chat.scrollTop = chat.scrollHeight;
+
+  } catch (err) {
+    chat.innerHTML += `
+      <div class="message bot">Error connecting to AI.</div>
+    `;
+  }
+}
+
+function createNewChat() {
+  document.getElementById("chat").innerHTML = "";
+}
 </script>
 
 </body>
